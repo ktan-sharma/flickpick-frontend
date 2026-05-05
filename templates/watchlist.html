@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Watchlist - FLICKPICK</title>
+    <link href="{% static 'css/style.css' %}" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <header class="main-header">
+        <nav>
+            <div class="nav-left">
+                <h1><a href="/" class="logo-link">FLICKPICK</a></h1>
+                <div class="nav-links">
+                    <a href="/">Home</a>
+                    <a href="/mustwatch/">Must Watch Century</a>
+                    <a href="/tvshow/">TV Shows</a>
+                    <a href="/watchlist/" class="active">My List</a>
+                </div>
+            </div>
+            <div class="nav-right">
+                <div class="search-bar">
+                    <input type="text" placeholder="Search movies & shows...">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div id="navbarAuthArea" style="position:relative; margin-left:auto; display:flex; align-items:center;">
+                  <button id="loginBtn" class="login-btn">Login</button>
+                  <button id="registerBtn" class="login-btn">Register</button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="watchlist-section">
+            <h2 class="section-title">My Watchlist</h2>
+            <div id="watchlistContainer" class="watchlist-grid">
+                <div class="loading">Loading watchlist...</div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p> 2024 FLICKPICK. All rights reserved.</p>
+    </footer>
+
+    <script type="module" src="{% static 'js/config.js' %}"></script>
+    <script type="module" src="{% static 'js/auth.js' %}"></script>
+    <script type="module" src="{% static 'js/watchlist.js' %}"></script>
+</body>
+</html>

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="FLICKPICK - Your source for honest movie reviews">
+    <title>FLICKPICK - Movie Reviews</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/fonts.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/preferenceSurvey.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script type="module" src="{% static 'js/config.js' %}"></script>
+    <script type="module" src="{% static 'js/emailVerification.js' %}"></script>
+    <script type="module" src="{% static 'js/movieCard.js' %}"></script>
+    <script type="module" src="{% static 'js/sliderManager.js' %}"></script>
+    <script type="module" src="{% static 'js/watchlist.js' %}"></script>
+    <script type="module" src="{% static 'js/script.js' %}"></script>
+    <script type="module" src="{% static 'js/homePageManager.js' %}"></script>
+    <script type="module" src="{% static 'js/modalManager.js' %}"></script>
+    <script type="module" src="{% static 'js/preferenceSurvey.js' %}"></script>
+    <script type="module" src="{% static 'js/recommended.js' %}"></script>
+</head>
+ 
+<body>
+    <header class="main-header">
+        <nav>
+            <div class="nav-left">
+                <h1><a href="/" class="logo-link">FLICKPICK</a></h1>
+                <div class="nav-links">
+                    <a href="/" class="active">Home</a>
+                    <a href="/mustwatch">Must Watch Century</a>
+                    <a href="/tvshow">TV Shows</a>
+                    <a href="/watchlist">My List</a>
+                </div>
+            </div>
+            <div class="nav-right">
+                <div class="search-bar">
+                    <input type="text" placeholder="Search movies & shows...">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div id="navbarAuthArea" style="position:relative; margin-left:auto; display:flex; align-items:center;">
+                  <button id="loginBtn" class="login-btn">Login</button>
+                  <button id="registerBtn" class="login-btn">Register</button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Hero Banner Netflix Style -->
+        <section class="hero-banner">
+            <div class="hero-bg"></div>
+            <div class="hero-content">
+                <h1 class="hero-title">Featured Movie Title</h1>
+                <p class="hero-desc">An exciting description for the featured movie goes here. Enjoy the best picks on FlickPick!</p>
+                <div class="hero-actions">
+                    <button class="hero-btn play" id="heroPlayBtn" data-title="Forrest Gump"><i class="fas fa-play"></i> Play</button>
+                    <button class="hero-btn info"><i class="fas fa-info-circle"></i> More Info</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section movie-row-section" style="margin-top: 0; margin-bottom: 3.5rem;">
+            <h2 class="section-title">Recommended for You</h2>
+            <button class="scroll-btn scroll-left"><i class="fas fa-chevron-left"></i></button>
+            <div class="movie-row" id="popularMovies">
+                <!-- Movies will be inserted here by JavaScript -->
+            </div>
+            <button class="scroll-btn scroll-right"><i class="fas fa-chevron-right"></i></button>
+        </section>
+
+        <section class="content-section movie-row-section" style="margin-top: 0; margin-bottom: 3.5rem;">
+            <h2 class="section-title">Trending Now</h2>
+            <button class="scroll-btn scroll-left"><i class="fas fa-chevron-left"></i></button>
+            <div class="movie-row" id="trendingMovies">
+                <!-- Movies will be inserted here -->
+            </div>
+            <button class="scroll-btn scroll-right"><i class="fas fa-chevron-right"></i></button>
+        </section>
+
+        <section class="content-section movie-row-section" style="margin-top: 0; margin-bottom: 3.5rem;">
+            <h2 class="section-title">Top Rated</h2>
+            <button class="scroll-btn scroll-left"><i class="fas fa-chevron-left"></i></button>
+            <div class="movie-row" id="topRatedMovies">
+                <!-- Movies will be inserted here -->
+            </div>
+            <button class="scroll-btn scroll-right"><i class="fas fa-chevron-right"></i></button>
+        </section>
+
+        <section class="content-section movie-row-section">
+            <h2 class="section-title">Action Thrillers</h2>
+            <button class="scroll-btn scroll-left"><i class="fas fa-chevron-left"></i></button>
+            <div class="movie-row" id="actionMovies"></div>
+            <button class="scroll-btn scroll-right"><i class="fas fa-chevron-right"></i></button>
+        </section>
+
+        <section class="content-section movie-row-section">
+            <h2 class="section-title">Comedies</h2>
+            <button class="scroll-btn scroll-left"><i class="fas fa-chevron-left"></i></button>
+            <div class="movie-row" id="comedyMovies"></div>
+            <button class="scroll-btn scroll-right"><i class="fas fa-chevron-right"></i></button>
+        </section>
+
+        <section class="content-section movie-row-section">
+            <h2 class="section-title">Family Favorites</h2>
+            <button class="scroll-btn scroll-left"><i class="fas fa-chevron-left"></i></button>
+            <div class="movie-row" id="familyMovies"></div>
+            <button class="scroll-btn scroll-right"><i class="fas fa-chevron-right"></i></button>
+        </section>
+    </main>
+
+    <div id="verificationModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" id="closeVerification">&times;</span>
+            <h2 class="auth-title">Verify Your Email</h2>
+            <p class="verification-text">
+                <!-- Code will be inserted here by JavaScript -->
+            </p>
+            <div class="form-group">
+                <input type="text" 
+                       id="verificationCode" 
+                       placeholder="Enter 6-digit code" 
+                       maxlength="6"
+                       pattern="\d{6}"
+                       autocomplete="off"
+                       required>
+            </div>
+            <button type="button" class="auth-button" id="verifyCodeBtn">Verify Code</button>
+            <button class="auth-button secondary" id="cancelVerification">Cancel</button>
+            <div class="auth-switch">
+                <p id="resendCode" style="cursor: pointer;">Resend Code</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="ratingModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 class="auth-title">Rate Movie</h2>
+            <div class="rating-container">
+                <div class="stars">
+                    <i class="fas fa-star" data-rating="1"></i>
+                    <i class="fas fa-star" data-rating="2"></i>
+                    <i class="fas fa-star" data-rating="3"></i>
+                    <i class="fas fa-star" data-rating="4"></i>
+                    <i class="fas fa-star" data-rating="5"></i>
+                    <i class="fas fa-star" data-rating="6"></i>
+                    <i class="fas fa-star" data-rating="7"></i>
+                    <i class="fas fa-star" data-rating="8"></i>
+                    <i class="fas fa-star" data-rating="9"></i>
+                    <i class="fas fa-star" data-rating="10"></i>
+                </div>
+                <span class="rating-value">0</span>/10
+            </div>
+            <button class="auth-button" id="submitRating">Submit Rating</button>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>FLICKPICK</h3>
+                <p>Your ultimate movie destination</p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <a href="/about/">About Us</a>
+                <a href="/contact/">Contact</a>
+                <a href="/terms/">Terms of Service</a>
+                <a href="/privacy/">Privacy Policy</a>
+                <a href="/admin/dashboard/">Admin Login</a>
+            </div>
+            <div class="footer-section">
+                <h4>Follow Us</h4>
+                <div class="social-links">
+                    <a href="https://www.facebook.com/share/16R75tsKkq/" target="_blank" rel="noopener"><i class="fab fa-facebook"></i></a>
+                    <a href="https://x.com/FLICKPICK_1?t=qCoQ4mrUcZt6K2JLFzUiRw&s=09" target="_blank" rel="noopener"><i class="fab fa-twitter"></i></a>
+                    <a href="https://www.instagram.com/flickpick.1?igsh=MXBsazEwYzkzemRnZw==" target="_blank" rel="noopener"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p> 2024 FLICKPICK. All rights reserved.</p>
+        </div>
+    </footer>
+
+<script>
+// Make Play button open current hero movie trailer on YouTube
+function searchYouTubeTrailerAndOpen(title) {
+  // Fallback: open YouTube search if API fails
+  var searchUrl = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(title + ' official trailer');
+  // Try YouTube Data API if you have a key, else fallback
+  // For privacy, we use search page
+  window.open(searchUrl, '_blank');
+}
+document.addEventListener('DOMContentLoaded', function() {
+  var playBtn = document.getElementById('heroPlayBtn');
+  if (playBtn) {
+    playBtn.addEventListener('click', function() {
+      var title = playBtn.getAttribute('data-title') || 'movie';
+      searchYouTubeTrailerAndOpen(title);
+    });
+  }
+});
+</script>
+    <script type="module" src="{% static 'js/auth.js' %}"></script>
+</body>
+</html>
