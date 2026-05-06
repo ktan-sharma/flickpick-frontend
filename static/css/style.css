@@ -1797,13 +1797,13 @@ footer {
    NAVBAR FIXES - Prevent Overlapping
    ============================================ */
 
-/* Main navbar layout */
-.navbar {
+/* Main navbar layout - using existing HTML classes */
+.main-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 15px 30px;
-    background: rgba(0, 0, 0, 0.9);
+    padding: 10px 20px;
+    background: rgba(0, 0, 0, 0.95);
     backdrop-filter: blur(10px);
     position: fixed;
     top: 0;
@@ -1814,9 +1814,18 @@ footer {
     box-sizing: border-box;
 }
 
+/* Left side - Logo and Nav */
+.nav-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex: 1;
+    min-width: 0;
+}
+
 /* Logo section */
-.nav-logo {
-    font-size: 1.5rem;
+.logo-link {
+    font-size: 1.4rem;
     font-weight: bold;
     color: #e50914;
     text-decoration: none;
@@ -1828,18 +1837,20 @@ footer {
 .nav-links {
     display: flex;
     align-items: center;
-    gap: 30px;
+    gap: 20px;
     flex: 1;
-    justify-content: center;
-    margin: 0 20px;
+    justify-content: flex-start;
+    margin-left: 20px;
+    min-width: 0;
 }
 
 .nav-links a {
     color: #fff;
     text-decoration: none;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     white-space: nowrap;
     transition: color 0.3s;
+    flex-shrink: 0;
 }
 
 .nav-links a:hover {
@@ -1850,72 +1861,68 @@ footer {
 .nav-right {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 12px;
     flex-shrink: 0;
 }
 
 /* Search container */
-.search-container {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
-
-.search-input {
+.search-bar {
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 20px;
     padding: 8px 15px;
     color: #fff;
-    font-size: 0.9rem;
-    width: 200px;
+    font-size: 0.85rem;
+    width: 180px;
     transition: all 0.3s;
 }
 
-.search-input:focus {
+.search-bar:focus {
     outline: none;
     border-color: #e50914;
-    width: 250px;
+    width: 220px;
 }
 
-.search-input::placeholder {
+.search-bar::placeholder {
     color: rgba(255, 255, 255, 0.6);
 }
 
-/* Auth buttons */
-.auth-buttons {
+/* Auth buttons container */
+#navbarAuthArea {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     align-items: center;
+    flex-shrink: 0;
 }
 
-.auth-buttons button {
+.login-btn, .register-btn {
     padding: 8px 16px;
     border-radius: 20px;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     cursor: pointer;
     transition: all 0.3s;
     white-space: nowrap;
+    flex-shrink: 0;
 }
 
-.auth-buttons .login-btn {
+.login-btn {
     background: transparent;
     border: 1px solid #fff;
     color: #fff;
 }
 
-.auth-buttons .login-btn:hover {
+.login-btn:hover {
     background: #fff;
     color: #000;
 }
 
-.auth-buttons .register-btn {
+.register-btn {
     background: #e50914;
     border: none;
     color: #fff;
 }
 
-.auth-buttons .register-btn:hover {
+.register-btn:hover {
     background: #f40612;
 }
 
