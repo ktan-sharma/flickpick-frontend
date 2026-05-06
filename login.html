@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - FLICKPICK</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="static/css/style.css" rel="stylesheet" type="text/css" />
+    <style>
+        body {
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(to bottom right, #181818 60%, #e50914 120%);
+            position: relative;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: url('https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=1500&q=80') center/cover no-repeat;
+            opacity: 0.18;
+            z-index: 0;
+        }
+        .login-container {
+            background: rgba(34,34,34,0.98);
+            padding: 2.5rem 2.8rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 32px #000a;
+            min-width: 340px;
+            z-index: 1;
+            position: relative;
+        }
+        .login-container h2 {
+            color: #e50914;
+            margin-bottom: 1.5rem;
+            letter-spacing: 1px;
+            text-align: center;
+        }
+        .login-container input {
+            width: 100%;
+            margin-bottom: 1rem;
+            padding: 0.8rem;
+            border-radius: 4px;
+            border: none;
+            background: #232323;
+            color: #fff;
+            font-size: 1rem;
+        }
+        .login-container input:focus {
+            outline: 2px solid #e50914;
+            background: #181818;
+        }
+        .login-container button {
+            width: 100%;
+            background: #e50914;
+            color: #fff;
+            border: none;
+            padding: 0.9rem;
+            border-radius: 4px;
+            font-size: 1.07rem;
+            cursor: pointer;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            margin-top: 0.5rem;
+            box-shadow: 0 2px 6px #0005;
+        }
+        .login-container button:hover {
+            background: #b0060f;
+        }
+        .login-container .error {
+            color: #ff4d4f;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        /* Hide browser's native password reveal icon */
+        input[type="password"]::-ms-reveal,
+        input[type="password"]::-ms-clear {
+            display: none;
+        }
+        input[type="password"]::-webkit-textfield-decoration-container {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2><a href="/" style="color:#e50914; text-decoration:none;">FLICKPICK</a></h2>
+        <div id="loginError" class="error" style="display:none;"></div>
+        <input type="text" id="loginEmailPage" placeholder="Email">
+        <div style="position:relative;">
+          <input type="password" id="loginPasswordPage" placeholder="Password" style="width:100%;padding-right:38px;">
+          <span id="toggleLoginPasswordPage" title="Show/Hide password" style="position:absolute;top:50%;right:12px;transform:translateY(-50%);cursor:pointer;font-size:1.5rem;color:#e50914;z-index:2;">
+            <i class="fas fa-eye"></i>
+          </span>
+        </div>
+        <button id="loginSubmit">Login</button>
+        <div style="text-align:center; margin-top:1rem;">
+            <span>Don't have an account? <a href="/register.html" style="color:#e50914;">Register</a></span>
+        </div>
+    </div>
+    <script src="static/js/config.js"></script>
+    <script src="static/js/auth.js"></script>
+    <script>
+        // Helper function to get CSRF token
+        function getCsrfToken() {
+            const name = 'csrftoken';
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Login form handling
+        document.getElementById('loginSubmit').onclick = async function() {
+            const email = document.getElementById('loginEmailPage').value.trim();
+            const password = document.getElementById('loginPasswordPage').value;
+            const errorDiv = document.getElementById('loginError');
+            errorDiv.style.display = 'none';
+            errorDiv.textContent = '';
+            
+            if (!email || !password) {
+                errorDiv.textContent = 'Please enter both email and password.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${window.BACKEND_URL || ''}/api/login/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCsrfToken(),
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 500);
+                } else {
+                    errorDiv.textContent = data.message || 'Login failed. Please try again.';
+                    errorDiv.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                errorDiv.textContent = 'An error occurred. Please try again.';
+                errorDiv.style.display = 'block';
+            }
+        };
+
+        // Show/hide password toggle
+        const loginPassword = document.getElementById('loginPasswordPage');
+        const toggleLoginPassword = document.getElementById('toggleLoginPasswordPage');
+        toggleLoginPassword.onclick = function() {
+            if (loginPassword.type === 'password') {
+                loginPassword.type = 'text';
+                toggleLoginPassword.innerHTML = '<i class="fas fa-eye-slash"></i>';
+            } else {
+                loginPassword.type = 'password';
+                toggleLoginPassword.innerHTML = '<i class="fas fa-eye"></i>';
+            }
+        };
+    </script>
+</body>
+</html>
