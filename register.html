@@ -130,6 +130,9 @@
 
     // Registration form handling (backend authentication handled by Django)
     document.addEventListener('DOMContentLoaded', function() {
+      console.log('[Register] Page loaded');
+      console.log('[Register] DJANGO_BACKEND_URL:', typeof DJANGO_BACKEND_URL !== 'undefined' ? DJANGO_BACKEND_URL : 'NOT DEFINED');
+
       // Show/hide password toggle for register
       const registerPassword = document.getElementById('registerPasswordPage');
       const toggleRegisterPassword = document.getElementById('toggleRegisterPasswordPage');
@@ -145,55 +148,75 @@
         };
       }
 
-      document.getElementById('registerSubmit').onclick = function() {
-        const name = document.getElementById('registerNamePage').value.trim();
-        const email = document.getElementById('registerEmailPage').value.trim();
-        const password = document.getElementById('registerPasswordPage').value;
-        const errorDiv = document.getElementById('registerError');
-        const successDiv = document.getElementById('registerSuccess');
-        errorDiv.style.display = 'none';
-        errorDiv.textContent = '';
-        successDiv.style.display = 'none';
-        successDiv.textContent = '';
-        if (!name || !email || !password) {
-            errorDiv.textContent = 'Please fill in all fields.';
-            errorDiv.style.display = 'block';
-            return;
-        }
-        if (password.length < 6) {
-            errorDiv.textContent = 'Password should be at least 6 characters.';
-            errorDiv.style.display = 'block';
-            return;
-        }
-        // Submit to backend for registration
-        fetch(`${DJANGO_BACKEND_URL}/api/register/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCsrfToken(),
-            },
-            credentials: 'include',
-            body: JSON.stringify({ name, email, password })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                successDiv.textContent = 'Registration successful! Let\'s set up your preferences...';
-                successDiv.style.display = 'block';
-                setTimeout(() => {
-                    window.location.href = 'survey.html';
-                }, 1500);
-            } else {
-                errorDiv.textContent = data.message || 'Registration failed. Please try again.';
+      const submitBtn = document.getElementById('registerSubmit');
+      console.log('[Register] Submit button found:', !!submitBtn);
+
+      if (submitBtn) {
+        submitBtn.onclick = function() {
+            console.log('[Register] Submit button clicked');
+            const name = document.getElementById('registerNamePage').value.trim();
+            const email = document.getElementById('registerEmailPage').value.trim();
+            const password = document.getElementById('registerPasswordPage').value;
+            const errorDiv = document.getElementById('registerError');
+            const successDiv = document.getElementById('registerSuccess');
+            errorDiv.style.display = 'none';
+            errorDiv.textContent = '';
+            successDiv.style.display = 'none';
+            successDiv.textContent = '';
+            if (!name || !email || !password) {
+                errorDiv.textContent = 'Please fill in all fields.';
                 errorDiv.style.display = 'block';
+                return;
             }
-        })
-        .catch((error) => {
-            console.error('Registration error:', error);
-            errorDiv.textContent = 'An error occurred. Please try again.';
-            errorDiv.style.display = 'block';
-        });
-    };
+            if (password.length < 6) {
+                errorDiv.textContent = 'Password should be at least 6 characters.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            // Submit to backend for registration
+            if (typeof DJANGO_BACKEND_URL === 'undefined') {
+                console.error('[Register] DJANGO_BACKEND_URL is not defined!');
+                errorDiv.textContent = 'Configuration error. Please refresh the page.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            const apiUrl = `${DJANGO_BACKEND_URL}/api/register/`;
+            console.log('[Register] Fetching:', apiUrl);
+            fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken(),
+                },
+                credentials: 'include',
+                body: JSON.stringify({ name, email, password })
+            })
+            .then(response => {
+                console.log('[Register] Response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('[Register] Response data:', data);
+                if (data.success) {
+                    successDiv.textContent = 'Registration successful! Let\'s set up your preferences...';
+                    successDiv.style.display = 'block';
+                    setTimeout(() => {
+                        window.location.href = 'survey.html';
+                    }, 1500);
+                } else {
+                    errorDiv.textContent = data.message || 'Registration failed. Please try again.';
+                    errorDiv.style.display = 'block';
+                }
+            })
+            .catch((error) => {
+                console.error('[Register] Registration error:', error);
+                errorDiv.textContent = 'An error occurred. Please try again.';
+                errorDiv.style.display = 'block';
+            });
+        };
+      } else {
+        console.error('[Register] Submit button not found!');
+      }
     });
     </script>
 </body>

@@ -122,6 +122,9 @@
 
         // Basic login form handling (backend authentication handled by Django)
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('[Login] Page loaded');
+            console.log('[Login] DJANGO_BACKEND_URL:', typeof DJANGO_BACKEND_URL !== 'undefined' ? DJANGO_BACKEND_URL : 'NOT DEFINED');
+
             // Show/hide password toggle
             const loginPassword = document.getElementById('loginPasswordPage');
             const toggleLoginPassword = document.getElementById('toggleLoginPasswordPage');
@@ -137,45 +140,65 @@
                 };
             }
 
-            document.getElementById('loginSubmit').onclick = function() {
-                const email = document.getElementById('loginEmailPage').value.trim();
-                const password = document.getElementById('loginPasswordPage').value;
-                const errorDiv = document.getElementById('loginError');
-                errorDiv.style.display = 'none';
-                errorDiv.textContent = '';
-                if (!email || !password) {
-                    errorDiv.textContent = 'Please enter both email and password.';
-                    errorDiv.style.display = 'block';
-                    return;
-                }
-                // Submit to backend for authentication
-                fetch(`${DJANGO_BACKEND_URL}/api/login/`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCsrfToken(),
-                    },
-                    credentials: 'include',
-                    body: JSON.stringify({ email, password })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Wait a moment for session to be created, then redirect
-                        setTimeout(() => {
-                            window.location.href = 'index.html';
-                        }, 500);
-                    } else {
-                        errorDiv.textContent = data.message || 'Login failed. Please try again.';
+            const submitBtn = document.getElementById('loginSubmit');
+            console.log('[Login] Submit button found:', !!submitBtn);
+
+            if (submitBtn) {
+                submitBtn.onclick = function() {
+                    console.log('[Login] Submit button clicked');
+                    const email = document.getElementById('loginEmailPage').value.trim();
+                    const password = document.getElementById('loginPasswordPage').value;
+                    const errorDiv = document.getElementById('loginError');
+                    errorDiv.style.display = 'none';
+                    errorDiv.textContent = '';
+                    if (!email || !password) {
+                        errorDiv.textContent = 'Please enter both email and password.';
                         errorDiv.style.display = 'block';
+                        return;
                     }
-                })
-                .catch((error) => {
-                    console.error('Login error:', error);
-                    errorDiv.textContent = 'An error occurred. Please try again.';
-                    errorDiv.style.display = 'block';
-                });
-            };
+                    // Submit to backend for authentication
+                    if (typeof DJANGO_BACKEND_URL === 'undefined') {
+                        console.error('[Login] DJANGO_BACKEND_URL is not defined!');
+                        errorDiv.textContent = 'Configuration error. Please refresh the page.';
+                        errorDiv.style.display = 'block';
+                        return;
+                    }
+                    const apiUrl = `${DJANGO_BACKEND_URL}/api/login/`;
+                    console.log('[Login] Fetching:', apiUrl);
+                    fetch(apiUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCsrfToken(),
+                        },
+                        credentials: 'include',
+                        body: JSON.stringify({ email, password })
+                    })
+                    .then(response => {
+                        console.log('[Login] Response status:', response.status);
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('[Login] Response data:', data);
+                        if (data.success) {
+                            // Wait a moment for session to be created, then redirect
+                            setTimeout(() => {
+                                window.location.href = 'index.html';
+                            }, 500);
+                        } else {
+                            errorDiv.textContent = data.message || 'Login failed. Please try again.';
+                            errorDiv.style.display = 'block';
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('[Login] Login error:', error);
+                        errorDiv.textContent = 'An error occurred. Please try again.';
+                        errorDiv.style.display = 'block';
+                    });
+                };
+            } else {
+                console.error('[Login] Submit button not found!');
+            }
         });
     </script>
 </body>
