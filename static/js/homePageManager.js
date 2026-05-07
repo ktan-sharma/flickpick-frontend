@@ -162,7 +162,7 @@ class HomePageManager {
                 if (moreInfoBtn) {
                     moreInfoBtn.dataset.imdbId = randomId;
                     moreInfoBtn.onclick = () => {
-                        window.location.href = `/movie/?id=${randomId}`;
+                        window.location.href = `movie.html?id=${randomId}`;
                     };
                 }
             }
@@ -185,7 +185,7 @@ class HomePageManager {
             const posterUrl = fixPosterUrl(movie.Poster);
             return `
             <div class="movie-card" data-id="${movie.imdbID || movie.id}">
-                <a href="/movie/?id=${movie.imdbID || movie.id}">
+                <a href="movie.html?id=${movie.imdbID || movie.id}">
                     <div class="movie-card-inner">
                         <img src="${posterUrl}" alt="${movie.Title}"
                             onerror="this.src='https://via.placeholder.com/240x360?text=No+Image'">

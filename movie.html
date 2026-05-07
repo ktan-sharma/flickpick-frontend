@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Details - FLICKPICK</title>
+    <link href="static/css/style.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <header class="main-header">
+        <nav>
+            <div class="nav-left">
+                <h1><a href="index.html" class="logo-link">FLICKPICK</a></h1>
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="#">Must Watch Century</a>
+                    <a href="#">TV Shows</a>
+                    <a href="#">My List</a>
+                </div>
+            </div>
+            <div class="nav-right">
+                <div class="search-bar">
+                    <input type="text" placeholder="Search movies & shows...">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div id="navbarAuthArea" style="position:relative; margin-left:auto; display:flex; align-items:center;">
+                  <button id="loginBtn" class="login-btn">Login</button>
+                  <button id="registerBtn" class="login-btn">Register</button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main id="movieDetails" class="movie-details-page">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Loading movie details...</p>
+        </div>
+    </main>
+
+    <!-- Review Section -->
+    <section id="reviewSection" class="review-section">
+        <h2>Post a Review</h2>
+        <div id="starRating" class="star-rating">
+            <span data-value="1" class="star">&#9733;</span>
+            <span data-value="2" class="star">&#9733;</span>
+            <span data-value="3" class="star">&#9733;</span>
+            <span data-value="4" class="star">&#9733;</span>
+            <span data-value="5" class="star">&#9733;</span>
+        </div>
+        <textarea id="reviewText" rows="3" placeholder="Write your review..."></textarea>
+        <button id="submitReviewBtn">Submit Review</button>
+        <div id="reviewMessage"></div>
+        <h3>Reviews</h3>
+        <div id="reviewsContainer"></div>
+    </section>
+
+    <footer>
+        <p> 2024 FLICKPICK. All rights reserved.</p>
+    </footer>
+
+    <script src="static/js/config.js"></script>
+    <script src="static/js/auth.js"></script>
+    <script>
+        // Helper function to get CSRF token
+        function getCsrfToken() {
+            const name = 'csrftoken';
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const movieId = urlParams.get('id');
+            
+            if (!movieId) {
+                document.getElementById('movieDetails').innerHTML = '<div class="error">No movie ID provided</div>';
+                return;
+            }
+
+            // Fetch movie details from TMDB
+            async function loadMovieDetails() {
+                try {
+                    const response = await fetch(`${BASE_URL}movie/${movieId}?api_key=${API_KEY}`);
+                    const data = await response.json();
+                    
+                    if (data && data.id) {
+                        renderMovieDetails(data);
+                    } else {
+                        throw new Error('Movie not found');
+                    }
+                } catch (error) {
+                    console.error('Error loading movie:', error);
+                    document.getElementById('movieDetails').innerHTML = '<div class="error">Failed to load movie details</div>';
+                }
+            }
+
+            function renderMovieDetails(movie) {
+                const posterUrl = movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : 'https://via.placeholder.com/500x750?text=No+Image';
+                const backdropUrl = movie.backdrop_path ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}` : '';
+                
+                const html = `
+                    <div class="movie-details-container" style="background: linear-gradient(to bottom, rgba(0,0,0,0.8), #141414), url('${backdropUrl}') center/cover no-repeat;">
+                        <div class="movie-details-content">
+                            <img src="${posterUrl}" alt="${movie.title}" class="movie-poster-large">
+                            <div class="movie-info-large">
+                                <h1 class="movie-title">${movie.title}</h1>
+                                <div class="movie-meta-large">
+                                    <span class="movie-year">${movie.release_date ? movie.release_date.split('-')[0] : 'N/A'}</span>
+                                    <span class="movie-rating">★ ${movie.vote_average ? (movie.vote_average / 2).toFixed(1) : 'N/A'}</span>
+                                    <span class="movie-runtime">${movie.runtime ? movie.runtime + ' min' : 'N/A'}</span>
+                                </div>
+                                <div class="movie-genres">
+                                    ${movie.genres ? movie.genres.map(g => `<span class="genre-tag">${g.name}</span>`).join('') : ''}
+                                </div>
+                                <p class="movie-overview">${movie.overview || 'No overview available'}</p>
+                                <div class="movie-actions">
+                                    <button id="addToWatchlistBtn" class="action-btn primary">
+                                        <i class="fas fa-plus"></i> Add to Watchlist
+                                    </button>
+                                    <button class="action-btn secondary">
+                                        <i class="fas fa-play"></i> Watch Trailer
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.getElementById('movieDetails').innerHTML = html;
+                
+                // Setup watchlist button
+                setupWatchlistButton(movie);
+            }
+
+            function setupWatchlistButton(movie) {
+                const btn = document.getElementById('addToWatchlistBtn');
+                if (!btn) return;
+
+                btn.addEventListener('click', async () => {
+                    try {
+                        const response = await fetch(`${DJANGO_BACKEND_URL}/api/watchlist/add/`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': getCsrfToken(),
+                            },
+                            credentials: 'include',
+                            body: JSON.stringify({
+                                movieId: movie.id,
+                                title: movie.title,
+                                poster: movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : ''
+                            })
+                        });
+                        
+                        const data = await response.json();
+                        if (data.success) {
+                            btn.innerHTML = '<i class="fas fa-check"></i> Added to Watchlist';
+                            btn.style.background = '#4caf50';
+                        } else {
+                            alert(data.message || 'Failed to add to watchlist');
+                        }
+                    } catch (error) {
+                        console.error('Error adding to watchlist:', error);
+                        alert('Please login to add to watchlist');
+                    }
+                });
+            }
+
+            // Review functionality
+            let selectedRating = 0;
+            const stars = document.querySelectorAll('#starRating .star');
+            const reviewText = document.getElementById('reviewText');
+            const submitBtn = document.getElementById('submitReviewBtn');
+            const reviewMsg = document.getElementById('reviewMessage');
+            const reviewsContainer = document.getElementById('reviewsContainer');
+
+            function highlightStars(rating) {
+                stars.forEach(star => {
+                    star.classList.toggle('selected', Number(star.dataset.value) <= rating);
+                });
+            }
+
+            stars.forEach(star => {
+                star.addEventListener('mouseenter', () => highlightStars(Number(star.dataset.value)));
+                star.addEventListener('mouseleave', () => highlightStars(selectedRating));
+                star.addEventListener('click', () => {
+                    selectedRating = Number(star.dataset.value);
+                    highlightStars(selectedRating);
+                });
+            });
+
+            submitBtn.addEventListener('click', async () => {
+                if (!selectedRating) {
+                    reviewMsg.textContent = 'Please select a star rating.';
+                    reviewMsg.style.color = '#ff4d4f';
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`${DJANGO_BACKEND_URL}/api/reviews/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCsrfToken(),
+                        },
+                        credentials: 'include',
+                        body: JSON.stringify({
+                            movie_id: movieId,
+                            rating: selectedRating,
+                            review_text: reviewText.value
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    if (data.success) {
+                        reviewMsg.textContent = 'Review submitted successfully!';
+                        reviewMsg.style.color = '#4caf50';
+                        reviewText.value = '';
+                        selectedRating = 0;
+                        highlightStars(0);
+                        loadReviews();
+                    } else {
+                        reviewMsg.textContent = data.message || 'Failed to submit review';
+                        reviewMsg.style.color = '#ff4d4f';
+                    }
+                } catch (error) {
+                    console.error('Error submitting review:', error);
+                    reviewMsg.textContent = 'Please login to submit a review';
+                    reviewMsg.style.color = '#ff4d4f';
+                }
+            });
+
+            async function loadReviews() {
+                try {
+                    const response = await fetch(`${DJANGO_BACKEND_URL}/api/reviews/?movie_id=${movieId}`);
+                    const data = await response.json();
+                    
+                    if (data.reviews && data.reviews.length > 0) {
+                        reviewsContainer.innerHTML = data.reviews.map(review => `
+                            <div class="review-item">
+                                <div class="review-header">
+                                    <span class="review-author">${review.username || 'Anonymous'}</span>
+                                    <span class="review-rating">★ ${review.rating}/5</span>
+                                </div>
+                                <p class="review-text">${review.review_text || ''}</p>
+                            </div>
+                        `).join('');
+                    } else {
+                        reviewsContainer.innerHTML = '<p>No reviews yet. Be the first to review!</p>';
+                    }
+                } catch (error) {
+                    console.error('Error loading reviews:', error);
+                    reviewsContainer.innerHTML = '<p>Failed to load reviews</p>';
+                }
+            }
+
+            // Load movie details and reviews
+            loadMovieDetails();
+            loadReviews();
+        });
+    </script>
+</body>
+</html>
