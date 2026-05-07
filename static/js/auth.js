@@ -30,7 +30,7 @@ class AuthManager {
     async loadCurrentUser() {
         console.log('[Auth] Loading current user...');
         try {
-            const response = await fetch('/api/get_current_user/', {
+            const response = await fetch(`${DJANGO_BACKEND_URL}/api/get_current_user/`, {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include'
@@ -40,14 +40,14 @@ class AuthManager {
                 const data = await response.json();
                 if (data.id) {
                     this.currentUser = data;
-                    
+
                     // Check if user needs to complete survey
-                    if (!data.has_completed_survey && window.location.pathname !== '/survey/') {
+                    if (!data.has_completed_survey && window.location.pathname !== '/survey.html') {
                         console.log('[Auth] User needs to complete survey, redirecting...');
-                        window.location.href = '/survey/';
+                        window.location.href = '/survey.html';
                         return;
                     }
-                    
+
                     this.updateUI();
                     console.log('[Auth] User loaded:', data);
                 } else {
@@ -69,13 +69,13 @@ class AuthManager {
 
         if (loginBtn) {
             loginBtn.addEventListener('click', () => {
-                window.location.href = '/login/';
+                window.location.href = 'login.html';
             });
         }
 
         if (registerBtn) {
             registerBtn.addEventListener('click', () => {
-                window.location.href = '/register/';
+                window.location.href = 'register.html';
             });
         }
 
@@ -168,7 +168,7 @@ class AuthManager {
         console.log('[Auth] Logging out...');
         try {
             const csrfToken = getCsrfToken();
-            const response = await fetch('/api/logout/', {
+            const response = await fetch(`${DJANGO_BACKEND_URL}/api/logout/`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: {
