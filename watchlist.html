@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Watchlist - FLICKPICK</title>
+    <link href="static/css/style.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <header class="main-header">
+        <nav>
+            <div class="nav-left">
+                <h1><a href="index.html" class="logo-link">FLICKPICK</a></h1>
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="mustwatch.html">Must Watch Century</a>
+                    <a href="tvshow.html">TV Shows</a>
+                    <a href="watchlist.html" class="active">My List</a>
+                </div>
+            </div>
+            <div class="nav-right">
+                <div class="search-bar">
+                    <input type="text" placeholder="Search watchlist...">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div id="navbarAuthArea" style="position:relative; margin-left:auto; display:flex; align-items:center;">
+                  <button id="loginBtn" class="login-btn">Login</button>
+                  <button id="registerBtn" class="login-btn">Register</button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="watchlist-page">
+        <section class="hero-section">
+            <h1>My Watchlist</h1>
+            <p>Your saved movies and shows</p>
+        </section>
+
+        <section class="watchlist-container" id="watchlistContainer">
+            <div class="loading-spinner">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Loading watchlist...</p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p> 2024 FLICKPICK. All rights reserved.</p>
+    </footer>
+
+    <script src="static/js/config.js"></script>
+    <script src="static/js/auth.js"></script>
+    <script>
+        // Helper function to get CSRF token
+        function getCsrfToken() {
+            const name = 'csrftoken';
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const container = document.getElementById('watchlistContainer');
+            
+            async function loadWatchlist() {
+                try {
+                    const response = await fetch(`${DJANGO_BACKEND_URL}/api/watchlist/`, {
+                        method: 'GET',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include'
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.watchlist && data.watchlist.length > 0) {
+                        container.innerHTML = `
+                            <div class="movies-grid">
+                                ${data.watchlist.map(item => `
+                                    <div class="movie-card" data-id="${item.movie_id}">
+                                        <a href="movie.html?id=${item.movie_id}">
+                                            <img src="${item.poster || 'https://via.placeholder.com/240x360?text=No+Image'}" alt="${item.title}" onerror="this.src='https://via.placeholder.com/240x360?text=No+Image'">
+                                            <div class="movie-info">
+                                                <h3>${item.title}</h3>
+                                            </div>
+                                        </a>
+                                        <button class="remove-btn" onclick="removeFromWatchlist('${item.movie_id}')">
+                                            <i class="fas fa-trash"></i> Remove
+                                        </button>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `;
+                    } else {
+                        container.innerHTML = `
+                            <div class="empty-state">
+                                <i class="fas fa-film" style="font-size: 4rem; color: #555;"></i>
+                                <p>Your watchlist is empty</p>
+                                <a href="index.html" class="action-btn primary">Browse Movies</a>
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    console.error('Error loading watchlist:', error);
+                    container.innerHTML = `
+                        <div class="error">
+                            <p>Please login to view your watchlist</p>
+                            <a href="login.html" class="action-btn primary">Login</a>
+                        </div>
+                    `;
+                }
+            }
+
+            window.removeFromWatchlist = async (movieId) => {
+                try {
+                    const response = await fetch(`${DJANGO_BACKEND_URL}/api/watchlist/remove/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCsrfToken(),
+                        },
+                        credentials: 'include',
+                        body: JSON.stringify({ movieId })
+                    });
+                    
+                    const data = await response.json();
+                    if (data.success) {
+                        loadWatchlist(); // Reload watchlist
+                    } else {
+                        alert(data.message || 'Failed to remove from watchlist');
+                    }
+                } catch (error) {
+                    console.error('Error removing from watchlist:', error);
+                    alert('Failed to remove from watchlist');
+                }
+            };
+
+            loadWatchlist();
+        });
+    </script>
+    <style>
+        .watchlist-page {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .hero-section {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .hero-section h1 {
+            color: #e50914;
+            font-size: 2.5rem;
+        }
+        .movies-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 4rem;
+            color: #ccc;
+        }
+        .error {
+            text-align: center;
+            padding: 4rem;
+            color: #ff4d4f;
+        }
+        .remove-btn {
+            width: 100%;
+            background: #ff4d4f;
+            color: white;
+            border: none;
+            padding: 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            transition: background 0.3s;
+        }
+        .remove-btn:hover {
+            background: #d32f2f;
+        }
+    </style>
+</body>
+</html>

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Preferences Survey - FLICKPICK</title>
+    <link rel="stylesheet" href="static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        .survey-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: #181818;
+            border-radius: 8px;
+        }
+        .survey-title {
+            color: #e50914;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        .survey-subtitle {
+            color: #aaa;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .genre-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .genre-card {
+            background: #222;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        .genre-card:hover {
+            background: #333;
+        }
+        .genre-card.selected {
+            border-color: #e50914;
+            background: #e5091415;
+        }
+        .genre-card i {
+            font-size: 2rem;
+            color: #e50914;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        .genre-card span {
+            color: #fff;
+            font-size: 0.9rem;
+        }
+        .submit-btn {
+            display: block;
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+            padding: 1rem;
+            background: #e50914;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .submit-btn:hover {
+            background: #b0060f;
+        }
+        .submit-btn:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+        .progress-bar {
+            height: 4px;
+            background: #333;
+            margin-bottom: 2rem;
+            border-radius: 2px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #e50914;
+            width: 0%;
+            border-radius: 2px;
+            transition: width 0.3s;
+        }
+        .error-message {
+            color: #ff4d4f;
+            text-align: center;
+            margin-top: 1rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <header style="background:#181818; padding:1rem 2rem;">
+        <a href="index.html" style="color:#e50914; font-size:1.5rem; font-weight:bold; text-decoration:none;">FLICKPICK</a>
+    </header>
+
+    <div class="survey-container">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        
+        <h1 class="survey-title">Welcome to FLICKPICK!</h1>
+        <p class="survey-subtitle">Select at least 3 genres you love so we can recommend the best movies for you</p>
+        
+        <div class="genre-grid" id="genreGrid">
+            <div class="genre-card" data-genre="28">
+                <i class="fas fa-fire"></i>
+                <span>Action</span>
+            </div>
+            <div class="genre-card" data-genre="35">
+                <i class="fas fa-laugh"></i>
+                <span>Comedy</span>
+            </div>
+            <div class="genre-card" data-genre="18">
+                <i class="fas fa-theater-masks"></i>
+                <span>Drama</span>
+            </div>
+            <div class="genre-card" data-genre="27">
+                <i class="fas fa-ghost"></i>
+                <span>Horror</span>
+            </div>
+            <div class="genre-card" data-genre="10749">
+                <i class="fas fa-heart"></i>
+                <span>Romance</span>
+            </div>
+            <div class="genre-card" data-genre="878">
+                <i class="fas fa-rocket"></i>
+                <span>Sci-Fi</span>
+            </div>
+            <div class="genre-card" data-genre="53">
+                <i class="fas fa-user-secret"></i>
+                <span>Thriller</span>
+            </div>
+            <div class="genre-card" data-genre="12">
+                <i class="fas fa-mountain"></i>
+                <span>Adventure</span>
+            </div>
+            <div class="genre-card" data-genre="16">
+                <i class="fas fa-palette"></i>
+                <span>Animation</span>
+            </div>
+            <div class="genre-card" data-genre="80">
+                <i class="fas fa-search"></i>
+                <span>Crime</span>
+            </div>
+            <div class="genre-card" data-genre="99">
+                <i class="fas fa-book"></i>
+                <span>Documentary</span>
+            </div>
+            <div class="genre-card" data-genre="14">
+                <i class="fas fa-hat-wizard"></i>
+                <span>Fantasy</span>
+            </div>
+        </div>
+        
+        <button class="submit-btn" id="submitBtn" disabled>Continue to Home</button>
+        <p class="error-message" id="errorMessage">Please select at least 3 genres</p>
+    </div>
+
+    <script src="static/js/config.js"></script>
+    <script>
+        let selectedGenres = [];
+        const genreCards = document.querySelectorAll('.genre-card');
+        const submitBtn = document.getElementById('submitBtn');
+        const errorMessage = document.getElementById('errorMessage');
+        const progressFill = document.getElementById('progressFill');
+
+        function updateProgress() {
+            const minRequired = 3;
+            const progress = Math.min((selectedGenres.length / minRequired) * 100, 100);
+            progressFill.style.width = progress + '%';
+            
+            if (selectedGenres.length >= 3) {
+                submitBtn.disabled = false;
+                errorMessage.style.display = 'none';
+            } else {
+                submitBtn.disabled = true;
+            }
+        }
+
+        function getCsrfToken() {
+            const name = 'csrftoken';
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        genreCards.forEach(card => {
+            card.addEventListener('click', () => {
+                const genre = card.dataset.genre;
+                
+                if (card.classList.contains('selected')) {
+                    card.classList.remove('selected');
+                    selectedGenres = selectedGenres.filter(g => g !== genre);
+                } else {
+                    card.classList.add('selected');
+                    selectedGenres.push(genre);
+                }
+                
+                updateProgress();
+            });
+        });
+
+        submitBtn.addEventListener('click', async () => {
+            if (selectedGenres.length < 3) {
+                errorMessage.style.display = 'block';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${DJANGO_BACKEND_URL}/api/preferences/`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCsrfToken()
+                    },
+                    body: JSON.stringify({
+                        genres: selectedGenres
+                    })
+                });
+
+                if (response.ok) {
+                    window.location.href = 'index.html';
+                } else {
+                    const data = await response.json();
+                    errorMessage.textContent = data.message || 'Failed to save preferences';
+                    errorMessage.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error saving preferences:', error);
+                errorMessage.textContent = 'An error occurred. Please try again.';
+                errorMessage.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

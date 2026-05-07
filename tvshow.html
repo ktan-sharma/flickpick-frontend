@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TV Shows - FLICKPICK</title>
+    <link href="static/css/style.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <header class="main-header">
+        <nav>
+            <div class="nav-left">
+                <h1><a href="index.html" class="logo-link">FLICKPICK</a></h1>
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="mustwatch.html">Must Watch Century</a>
+                    <a href="tvshow.html" class="active">TV Shows</a>
+                    <a href="watchlist.html">My List</a>
+                </div>
+            </div>
+            <div class="nav-right">
+                <div class="search-bar">
+                    <input type="text" placeholder="Search TV shows...">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div id="navbarAuthArea" style="position:relative; margin-left:auto; display:flex; align-items:center;">
+                  <button id="loginBtn" class="login-btn">Login</button>
+                  <button id="registerBtn" class="login-btn">Register</button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="tv-shows-page">
+        <section class="hero-section">
+            <h1>TV Shows</h1>
+            <p>Discover the best TV series</p>
+        </section>
+
+        <section class="content-section">
+            <h2 class="section-title">Trending TV Shows</h2>
+            <div class="movie-row" id="trendingTvShows"></div>
+        </section>
+
+        <section class="content-section">
+            <h2 class="section-title">Top Rated TV Shows</h2>
+            <div class="movie-row" id="topRatedTvShows"></div>
+        </section>
+
+        <section class="content-section">
+            <h2 class="section-title">Most Recent TV Shows</h2>
+            <div class="movie-row" id="recentTvShows"></div>
+        </section>
+    </main>
+
+    <footer>
+        <p> 2024 FLICKPICK. All rights reserved.</p>
+    </footer>
+
+    <script src="static/js/config.js"></script>
+    <script src="static/js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            async function fetchTvShows(endpoint, containerId) {
+                try {
+                    const response = await fetch(`${BASE_URL}${endpoint}?api_key=${API_KEY}&language=en-US`);
+                    const data = await response.json();
+                    const container = document.getElementById(containerId);
+                    if (container && data.results) {
+                        container.innerHTML = data.results.map(show => {
+                            const posterUrl = show.poster_path ? `https://image.tmdb.org/t/p/w500${show.poster_path}` : 'https://via.placeholder.com/240x360?text=No+Image';
+                            return `
+                                <div class="movie-card">
+                                    <img src="${posterUrl}" alt="${show.name}" onerror="this.src='https://via.placeholder.com/240x360?text=No+Image'">
+                                    <div class="movie-info">
+                                        <h3>${show.name}</h3>
+                                        <p>${show.first_air_date ? show.first_air_date.split('-')[0] : 'N/A'}</p>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                    }
+                } catch (error) {
+                    console.error(`Error loading ${containerId}:`, error);
+                }
+            }
+
+            // Load TV shows
+            await Promise.all([
+                fetchTvShows('trending/tv/week', 'trendingTvShows'),
+                fetchTvShows('tv/top_rated', 'topRatedTvShows'),
+                fetchTvShows('tv/on_the_air', 'recentTvShows')
+            ]);
+        });
+    </script>
+</body>
+</html>

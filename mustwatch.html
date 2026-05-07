@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Must Watch Century - FLICKPICK</title>
+    <link href="static/css/style.css" rel="stylesheet" type="text/css" />
+    <link href="static/css/mustwatch.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <header class="main-header">
+        <nav>
+            <div class="nav-left">
+                <h1><a href="index.html" class="logo-link">FLICKPICK</a></h1>
+                <div class="nav-links">
+                    <a href="index.html">Home</a>
+                    <a href="mustwatch.html" class="active">Must Watch Century</a>
+                    <a href="tvshow.html" id="tvShowsNav">TV Shows</a>
+                    <a href="watchlist.html">My List</a>
+                </div>
+            </div>
+            <div class="nav-right">
+                <div class="search-bar">
+                    <input type="text" id="movieSearch" placeholder="Search in Must Watch Century...">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div id="navbarAuthArea" style="position:relative; margin-left:auto; display:flex; align-items:center;">
+                  <button id="loginBtn" class="login-btn">Login</button>
+                  <button id="registerBtn" class="login-btn">Register</button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="mustwatch-container">
+        <section class="hero-section">
+            <h1>Must Watch Century</h1>
+            <p>100 Essential Movies Everyone Should Watch</p>
+        </section>
+
+        <section class="filters-section">
+            <div class="filter-container">
+                <select id="genreFilter">
+                    <option value="">All Genres</option>
+                </select>
+                <select id="decadeFilter">
+                    <option value="">All Decades</option>
+                </select>
+                <select id="sortBy">
+                    <option value="rank">Rank</option>
+                    <option value="year">Year</option>
+                    <option value="rating">Rating</option>
+                    <option value="title">Title</option>
+                </select>
+            </div>
+        </section>
+
+        <section class="movies-grid" id="moviesGrid">
+            <!-- Movies will be inserted here by JavaScript -->
+        </section>
+
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+        </div>
+    </main>
+
+    <footer>
+        <p> 2024 FLICKPICK. All rights reserved.</p>
+    </footer>
+
+    <script src="static/js/config.js"></script>
+    <script src="static/js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const moviesGrid = document.getElementById('moviesGrid');
+            const loadingSpinner = document.querySelector('.loading-spinner');
+            const genreFilter = document.getElementById('genreFilter');
+            const decadeFilter = document.getElementById('decadeFilter');
+            const sortBy = document.getElementById('sortBy');
+            const searchInput = document.getElementById('movieSearch');
+
+            // Top 100 movies (using TMDB IDs)
+            const top100Movies = [
+                { id: '278', rank: 1, title: 'The Shawshank Redemption', year: 1994, rating: 9.3 },
+                { id: '238', rank: 2, title: 'The Godfather', year: 1972, rating: 9.2 },
+                { id: '240', rank: 3, title: 'The Godfather Part II', year: 1974, rating: 9.0 },
+                { id: '155', rank: 4, title: 'The Dark Knight', year: 2008, rating: 9.0 },
+                { id: '389', rank: 5, title: '12 Angry Men', year: 1957, rating: 9.0 },
+                { id: '424', rank: 6, title: "Schindler's List", year: 1993, rating: 8.9 },
+                { id: '680', rank: 7, title: 'The Lord of the Rings: The Return of the King', year: 2003, rating: 8.9 },
+                { id: '13', rank: 8, title: 'Pulp Fiction', year: 1994, rating: 8.9 },
+                { id: '122', rank: 9, title: 'The Lord of the Rings: The Fellowship of the Ring', year: 2001, rating: 8.8 },
+                { id: '550', rank: 10, title: 'Fight Club', year: 1999, rating: 8.8 }
+            ];
+
+            async function loadMovies() {
+                loadingSpinner.style.display = 'block';
+                moviesGrid.innerHTML = '';
+                
+                try {
+                    const movies = await Promise.all(
+                        top100Movies.map(async (movie) => {
+                            const response = await fetch(`${BASE_URL}movie/${movie.id}?api_key=${API_KEY}`);
+                            const data = await response.json();
+                            return { ...movie, ...data };
+                        })
+                    );
+                    
+                    renderMovies(movies);
+                } catch (error) {
+                    console.error('Error loading movies:', error);
+                    moviesGrid.innerHTML = '<div class="error">Failed to load movies</div>';
+                } finally {
+                    loadingSpinner.style.display = 'none';
+                }
+            }
+
+            function renderMovies(movies) {
+                moviesGrid.innerHTML = movies.map((movie, index) => {
+                    const posterUrl = movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : 'https://via.placeholder.com/240x360?text=No+Image';
+                    return `
+                        <div class="movie-card" data-id="${movie.id}">
+                            <a href="movie.html?id=${movie.id}">
+                                <div class="rank-badge">#${index + 1}</div>
+                                <img src="${posterUrl}" alt="${movie.title}" onerror="this.src='https://via.placeholder.com/240x360?text=No+Image'">
+                                <div class="movie-info">
+                                    <h3>${movie.title}</h3>
+                                    <div class="movie-meta">
+                                        <span class="movie-year">${movie.release_date ? movie.release_date.split('-')[0] : movie.year}</span>
+                                        <span class="movie-rating">★ ${(movie.vote_average / 2).toFixed(1)}</span>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Load movies on page load
+            loadMovies();
+
+            // Search functionality
+            searchInput.addEventListener('input', function() {
+                const query = this.value.toLowerCase();
+                const filtered = top100Movies.filter(m => m.title.toLowerCase().includes(query));
+                renderMovies(filtered);
+            });
+        });
+    </script>
+</body>
+</html>
