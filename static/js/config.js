@@ -3,7 +3,7 @@ const BASE_URL = 'https://api.themoviedb.org/3/';
 
 // Django Backend API URL
 // Update this with your actual Django backend URL when deployed
-const DJANGO_BACKEND_URL = 'https://flickpick.onrender.com'; // Your Django backend URL
+const DJANGO_BACKEND_URL = 'https://flickpick-backend-ljym.onrender.com'; // Your Django backend URL
 // Local development: 'http://localhost:8000'
 
 const MOVIES = {
