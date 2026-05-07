@@ -87,7 +87,7 @@
 </head>
 <body>
     <div class="login-container">
-        <h2><a href="/" style="color:#e50914; text-decoration:none;">FLICKPICK</a></h2>
+        <h2><a href="index.html" style="color:#e50914; text-decoration:none;">FLICKPICK</a></h2>
         <div id="loginError" class="error" style="display:none;"></div>
         <input type="text" id="loginEmailPage" placeholder="Email">
         <div style="position:relative;">
@@ -102,7 +102,6 @@
         </div>
     </div>
     <script src="static/js/config.js"></script>
-    <script src="static/js/auth.js"></script>
     <script>
         // Helper function to get CSRF token
         function getCsrfToken() {
@@ -121,46 +120,45 @@
             return cookieValue;
         }
 
-        // Login form handling
-        document.getElementById('loginSubmit').onclick = async function() {
+        // Basic login form handling (backend authentication handled by Django)
+        document.getElementById('loginSubmit').onclick = function() {
             const email = document.getElementById('loginEmailPage').value.trim();
             const password = document.getElementById('loginPasswordPage').value;
             const errorDiv = document.getElementById('loginError');
             errorDiv.style.display = 'none';
             errorDiv.textContent = '';
-            
             if (!email || !password) {
                 errorDiv.textContent = 'Please enter both email and password.';
                 errorDiv.style.display = 'block';
                 return;
             }
-            
-            try {
-                const response = await fetch(`${DJANGO_BACKEND_URL}/api/login/`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCsrfToken(),
-                    },
-                    credentials: 'include',
-                    body: JSON.stringify({ email, password })
-                });
-                
-                const data = await response.json();
-                
+            // Submit to backend for authentication
+            fetch(`${DJANGO_BACKEND_URL}/api/login/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken(),
+                },
+                credentials: 'include',
+                body: JSON.stringify({ email, password })
+            })
+            .then(response => response.json())
+            .then(data => {
                 if (data.success) {
+                    // Wait a moment for session to be created, then redirect
                     setTimeout(() => {
-                        window.location.href = '/';
+                        window.location.href = 'index.html';
                     }, 500);
                 } else {
                     errorDiv.textContent = data.message || 'Login failed. Please try again.';
                     errorDiv.style.display = 'block';
                 }
-            } catch (error) {
+            })
+            .catch((error) => {
                 console.error('Login error:', error);
                 errorDiv.textContent = 'An error occurred. Please try again.';
                 errorDiv.style.display = 'block';
-            }
+            });
         };
 
         // Show/hide password toggle

@@ -92,7 +92,7 @@
 </head>
 <body>
     <div class="register-container">
-        <h2><a href="/" style="color:#e50914; text-decoration:none;">FLICKPICK</a></h2>
+        <h2><a href="index.html" style="color:#e50914; text-decoration:none;">FLICKPICK</a></h2>
         <div id="registerError" class="error" style="display:none;"></div>
         <div id="registerSuccess" class="success" style="display:none;"></div>
         <input type="text" id="registerNamePage" placeholder="Full Name">
@@ -163,10 +163,10 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                successDiv.textContent = 'Registration successful! Redirecting to login...';
+                successDiv.textContent = 'Registration successful! Let\'s set up your preferences...';
                 successDiv.style.display = 'block';
                 setTimeout(() => {
-                    window.location.href = 'login.html';
+                    window.location.href = 'survey.html';
                 }, 1500);
             } else {
                 errorDiv.textContent = data.message || 'Registration failed. Please try again.';
@@ -182,22 +182,18 @@
     });
     </script>
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Show/hide password toggle for register
-        const registerPassword = document.getElementById('registerPasswordPage');
-        const toggleRegisterPassword = document.getElementById('toggleRegisterPasswordPage');
-        if (toggleRegisterPassword && registerPassword) {
-            toggleRegisterPassword.onclick = function() {
-                if (registerPassword.type === 'password') {
-                    registerPassword.type = 'text';
-                    toggleRegisterPassword.innerHTML = '<i class="fas fa-eye-slash"></i>';
-                } else {
-                    registerPassword.type = 'password';
-                    toggleRegisterPassword.innerHTML = '<i class="fas fa-eye"></i>';
-                }
-            };
+    // Show/hide password toggle for register
+    const registerPassword = document.getElementById('registerPasswordPage');
+    const toggleRegisterPassword = document.getElementById('toggleRegisterPasswordPage');
+    toggleRegisterPassword.onclick = function() {
+        if (registerPassword.type === 'password') {
+            registerPassword.type = 'text';
+            toggleRegisterPassword.innerHTML = '<i class="fas fa-eye-slash"></i>';
+        } else {
+            registerPassword.type = 'password';
+            toggleRegisterPassword.innerHTML = '<i class="fas fa-eye"></i>';
         }
-    });
+    };
     </script>
 </body>
 </html>
