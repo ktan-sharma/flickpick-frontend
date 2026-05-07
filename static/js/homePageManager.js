@@ -1,5 +1,3 @@
-import { API_KEY, BASE_URL } from './config.js';
-
 // Helper function to fix poster URLs
 function fixPosterUrl(posterUrl) {
     if (!posterUrl) {
@@ -17,7 +15,7 @@ function fixPosterUrl(posterUrl) {
     return `https://image.tmdb.org/t/p/w500/${posterUrl}`;
 }
 
-export class HomePageManager {
+class HomePageManager {
     constructor() {
         this.initializeHeader();
         this.loadHeroBannerMovie(); // Load random hero movie
@@ -74,38 +72,54 @@ export class HomePageManager {
         };
 
         try {
+            console.log(`[DEBUG] Loading movies for ${section}...`);
             const movies = await Promise.all(
                 movieIds[section].map(async imdbId => {
                     // Use TMDB's /find endpoint to get TMDB movie by IMDb ID
                     const tmdbFindUrl = `${BASE_URL}find/${imdbId}?api_key=${API_KEY}&language=en-US&external_source=imdb_id`;
-                    const response = await fetch(tmdbFindUrl);
-                    const data = await response.json();
-                    // TMDB returns results in movie_results array
-                    if (data && data.movie_results && data.movie_results.length > 0) {
-                        const movie = data.movie_results[0];
-                        // Adapt TMDB data to OMDB-like structure for compatibility
-                        const posterUrl = movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : 'https://via.placeholder.com/240x360?text=No+Image';
-                        return {
-                            imdbID: imdbId,
-                            id: movie.id,
-                            Title: movie.title,
-                            Poster: posterUrl,
-                            Year: movie.release_date ? movie.release_date.split('-')[0] : '',
-                            imdbRating: movie.vote_average ? (movie.vote_average / 2).toFixed(1) : 'N/A',
-                            Genre: '', // TMDB /find does not include genres
-                            Runtime: '', // Not available here
-                            Plot: movie.overview,
-                            Director: '', // Not available here
-                            Writer: '', // Not available here
-                            Actors: '', // Not available here
-                        };
+                    console.log(`[DEBUG] Fetching: ${tmdbFindUrl}`);
+                    try {
+                        const response = await fetch(tmdbFindUrl);
+                        console.log(`[DEBUG] Response status for ${imdbId}: ${response.status}`);
+                        if (!response.ok) {
+                            console.error(`[DEBUG] HTTP error for ${imdbId}: ${response.status}`);
+                            return null;
+                        }
+                        const data = await response.json();
+                        console.log(`[DEBUG] Data for ${imdbId}:`, data);
+                        // TMDB returns results in movie_results array
+                        if (data && data.movie_results && data.movie_results.length > 0) {
+                            const movie = data.movie_results[0];
+                            // Adapt TMDB data to OMDB-like structure for compatibility
+                            const posterUrl = movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : 'https://via.placeholder.com/240x360?text=No+Image';
+                            return {
+                                imdbID: imdbId,
+                                id: movie.id,
+                                Title: movie.title,
+                                Poster: posterUrl,
+                                Year: movie.release_date ? movie.release_date.split('-')[0] : '',
+                                imdbRating: movie.vote_average ? (movie.vote_average / 2).toFixed(1) : 'N/A',
+                                Genre: '', // TMDB /find does not include genres
+                                Runtime: '', // Not available here
+                                Plot: movie.overview,
+                                Director: '', // Not available here
+                                Writer: '', // Not available here
+                                Actors: '', // Not available here
+                            };
+                        } else {
+                            console.warn(`[DEBUG] No movie_results for ${imdbId}`);
+                        }
+                    } catch (fetchError) {
+                        console.error(`[DEBUG] Fetch error for ${imdbId}:`, fetchError);
                     }
                     return null;
                 })
             );
-            return movies.filter(movie => movie !== null);
+            const filteredMovies = movies.filter(movie => movie !== null);
+            console.log(`[DEBUG] Loaded ${filteredMovies.length} movies for ${section}`);
+            return filteredMovies;
         } catch (error) {
-            console.error(`Error fetching ${section}:`, error);
+            console.error(`[DEBUG] Error fetching ${section}:`, error);
             return [];
         }
     }
@@ -275,3 +289,8 @@ export class HomePageManager {
         });
     }
 }
+
+// Instantiate the HomePageManager when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    window.homePageManager = new HomePageManager();
+});

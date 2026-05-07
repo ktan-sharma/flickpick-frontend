@@ -218,4 +218,5 @@ class AuthManager {
     }
 }
 
-export const userManager = new AuthManager();
+// Instantiate the AuthManager
+const userManager = new AuthManager();

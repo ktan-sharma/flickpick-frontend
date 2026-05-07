@@ -1,5 +1,3 @@
-import { API_KEY, BASE_URL } from './config.js';
-
 // Helper function to fix poster URLs
 function fixPosterUrl(posterUrl) {
     if (!posterUrl) {
